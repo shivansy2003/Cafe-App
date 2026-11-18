@@ -1,0 +1,1132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#2C1810" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Roast &amp; Repeat — Cafe Retention App</title>
+  <link rel="manifest" href="data:application/manifest+json,{&quot;name&quot;:&quot;Roast &amp; Repeat Cafe&quot;,&quot;short_name&quot;:&quot;CafeApp&quot;,&quot;display&quot;:&quot;standalone&quot;,&quot;background_color&quot;:&quot;#FAF6F2&quot;,&quot;theme_color&quot;:&quot;#2C1810&quot;}" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <style>
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #FAF6F2;
+      color: #1F140E;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    @keyframes popIn {
+      0% { transform: scale(0.85); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .animate-pop { animation: popIn 0.2s ease-out forwards; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col items-center bg-[#EFE8E0]">
+
+  <!-- Mobile-first App Container -->
+  <div id="app-shell" class="w-full max-w-md min-h-screen bg-[#FAF6F2] shadow-2xl flex flex-col relative overflow-x-hidden pb-24">
+
+    <!-- Top Header -->
+    <header class="sticky top-0 z-30 bg-[#2C1810] text-white px-4 py-3 shadow-md">
+      <div class="flex items-center justify-between gap-2">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <div class="w-9 h-9 rounded-xl bg-[#C67C4E] flex items-center justify-center text-lg shrink-0 shadow">
+            ☕
+          </div>
+          <div class="min-w-0">
+            <h1 id="header-cafe-name" class="font-bold text-base leading-tight truncate">Roast &amp; Repeat Cafe</h1>
+            <p class="text-[11px] text-[#E6D5C3] truncate">QR Order • Loyalty • Win-Back</p>
+          </div>
+        </div>
+        <button id="trial-badge-btn" type="button" class="shrink-0 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-[#C67C4E]/25 border border-[#C67C4E]/60 text-[#FFE5D0] hover:bg-[#C67C4E]/40 transition">
+          Pilot: 28d Left
+        </button>
+      </div>
+    </header>
+
+    <!-- Active Customer Bar (Visible on Order, Stamps, Rewards) -->
+    <div id="customer-context-bar" class="bg-white border-b border-[#EADFD5] px-4 py-2.5 flex items-center justify-between gap-2">
+      <div class="flex items-center gap-2 min-w-0">
+        <span class="w-7 h-7 rounded-full bg-[#F5E6D3] text-[#8B4513] font-bold text-xs flex items-center justify-center shrink-0" id="active-cust-initials">AK</span>
+        <div class="min-w-0">
+          <div class="text-xs font-semibold text-[#2C1810] truncate" id="active-cust-name">Aarav Kulkarni</div>
+          <div class="text-[11px] text-[#7A6558]" id="active-cust-meta">4 Stamps • Table 2</div>
+        </div>
+      </div>
+      <button id="switch-customer-btn" type="button" class="text-xs font-semibold text-[#C67C4E] bg-[#FFF5ED] border border-[#F0D9C6] px-2.5 py-1 rounded-lg hover:bg-[#FCE8D5] transition shrink-0">
+        Switch / Add
+      </button>
+    </div>
+
+    <!-- Main Dynamic View Area -->
+    <main id="main-content" class="flex-1 px-4 pt-4 space-y-4">
+      <!-- Rendered dynamically by JS -->
+    </main>
+
+    <!-- Trial Expired Lock Overlay -->
+    <div id="trial-lock-overlay" class="hidden fixed inset-0 z-40 bg-[#1A0E0A]/85 backdrop-blur-sm flex items-center justify-center p-5">
+      <div class="bg-white rounded-2xl max-w-sm w-full p-6 text-center shadow-2xl border border-[#EADFD5] animate-pop">
+        <div class="w-14 h-14 mx-auto rounded-2xl bg-red-100 text-red-600 flex items-center justify-center text-2xl mb-3">
+          🔒
+        </div>
+        <h2 class="text-lg font-bold text-[#2C1810]">30-Day Free Trial Ended</h2>
+        <p class="text-xs text-[#6B574B] mt-2 leading-relaxed">
+          Your 1-month free pilot for <strong id="lock-cafe-name">Roast &amp; Repeat Cafe</strong> has expired. Activate the monthly maintenance plan to unlock QR ordering, stamps, and win-back tools.
+        </p>
+        <div class="mt-4 p-3 rounded-xl bg-[#FAF6F2] border border-[#EADFD5] text-left text-xs space-y-1">
+          <div class="flex justify-between"><span class="text-[#7A6558]">Setup Fee:</span><span class="font-bold text-[#2C1810]">₹10,000 (One-time)</span></div>
+          <div class="flex justify-between"><span class="text-[#7A6558]">Monthly Plan:</span><span class="font-bold text-[#2C1810]">Active Support + Hosting</span></div>
+        </div>
+        <button id="unlock-demo-btn" type="button" class="mt-4 w-full py-2.5 rounded-xl bg-[#2C1810] text-white text-xs font-semibold hover:bg-[#3F2419] transition">
+          Go to Owner Dashboard to Unlock
+        </button>
+      </div>
+    </div>
+
+    <!-- Floating Cart Bar (Only on QR Order tab when cart > 0) -->
+    <div id="floating-cart-bar" class="hidden fixed bottom-20 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-[26rem] z-30 bg-[#2C1810] text-white rounded-2xl p-3 shadow-xl flex items-center justify-between gap-3 animate-pop">
+      <div>
+        <div class="text-xs text-[#E6D5C3]" id="cart-summary-count">2 items • Table 2</div>
+        <div class="text-base font-bold" id="cart-summary-total">₹240</div>
+      </div>
+      <button id="place-order-btn" type="button" class="px-4 py-2 rounded-xl bg-[#C67C4E] hover:bg-[#B36B3F] text-white text-xs font-bold transition shadow">
+        Place Order (+1 Stamp)
+      </button>
+    </div>
+
+    <!-- Bottom Navigation (5 Core Screens) -->
+    <nav class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md z-30 bg-white border-t border-[#EADFD5] px-1 py-1.5 flex justify-around items-center shadow-[0_-4px_16px_rgba(44,24,16,0.06)]">
+      <button type="button" data-tab="order" class="nav-btn flex flex-col items-center gap-0.5 px-2 py-1 rounded-xl text-[#C67C4E] font-semibold">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+        <span class="text-[10px]">QR Order</span>
+      </button>
+      <button type="button" data-tab="stamps" class="nav-btn flex flex-col items-center gap-0.5 px-2 py-1 rounded-xl text-[#8A7568] font-medium">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <span class="text-[10px]">Stamps</span>
+      </button>
+      <button type="button" data-tab="rewards" class="nav-btn flex flex-col items-center gap-0.5 px-2 py-1 rounded-xl text-[#8A7568] font-medium">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/></svg>
+        <span class="text-[10px]">Rewards</span>
+      </button>
+      <button type="button" data-tab="winback" class="nav-btn flex flex-col items-center gap-0.5 px-2 py-1 rounded-xl text-[#8A7568] font-medium relative">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+        <span class="text-[10px]">Win-Back</span>
+        <span id="dormant-badge" class="absolute top-0.5 right-2 w-2 h-2 rounded-full bg-red-500"></span>
+      </button>
+      <button type="button" data-tab="owner" class="nav-btn flex flex-col items-center gap-0.5 px-2 py-1 rounded-xl text-[#8A7568] font-medium">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+        <span class="text-[10px]">Owner</span>
+      </button>
+    </nav>
+
+    <!-- Customer Switch / Add Modal -->
+    <div id="customer-modal" class="hidden fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center p-3">
+      <div class="bg-white w-full max-w-md rounded-2xl p-4 shadow-2xl space-y-3 animate-pop max-h-[85vh] flex flex-col">
+        <div class="flex items-center justify-between border-b border-[#EADFD5] pb-2">
+          <h3 class="font-bold text-sm text-[#2C1810]">Select or Add Customer</h3>
+          <button id="close-customer-modal" type="button" class="text-xs font-semibold text-[#7A6558] px-2 py-1 rounded-lg hover:bg-[#FAF6F2]">Close</button>
+        </div>
+        <div id="modal-customer-list" class="space-y-2 overflow-y-auto max-h-56 pr-1"></div>
+        <form id="add-customer-form" class="border-t border-[#EADFD5] pt-3 space-y-2">
+          <p class="text-xs font-semibold text-[#2C1810]">New Walk-in Customer</p>
+          <div class="grid grid-cols-2 gap-2">
+            <input id="new-cust-name" type="text" placeholder="Customer Name" required class="px-3 py-2 text-xs rounded-xl border border-[#DFD2C5] focus:outline-none focus:border-[#C67C4E]" />
+            <input id="new-cust-phone" type="tel" placeholder="10-digit WhatsApp" required class="px-3 py-2 text-xs rounded-xl border border-[#DFD2C5] focus:outline-none focus:border-[#C67C4E]" />
+          </div>
+          <button type="submit" class="w-full py-2 rounded-xl bg-[#2C1810] text-white text-xs font-semibold hover:bg-[#3E2318] transition">
+            + Add Customer &amp; Select
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- 6th Coffee Google Review & Social Connect Modal -->
+    <div id="review-social-modal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-3">
+      <div class="bg-white w-full max-w-md rounded-2xl p-5 shadow-2xl space-y-4 animate-pop border border-[#EADFD5]">
+        <div class="flex items-start justify-between gap-2">
+          <div>
+            <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-green-100 text-[#2E7D32]">Free Coffee Claimed!</span>
+            <h3 class="text-base font-extrabold text-[#2C1810] mt-1">Enjoy Your Free Coffee ☕</h3>
+            <p class="text-xs text-[#7A6558]">Voucher <strong id="modal-voucher-code" class="text-[#C67C4E] font-mono">CAFE-0000</strong> is active. Support us with a quick Google rating &amp; follow!</p>
+          </div>
+          <button id="close-review-modal" type="button" class="text-xs font-semibold text-[#7A6558] px-2 py-1 rounded-lg hover:bg-[#FAF6F2]">Close</button>
+        </div>
+
+        <div class="bg-[#FAF6F2] rounded-xl p-3 border border-[#EADFD5] text-center space-y-2">
+          <div class="text-xs font-bold text-[#2C1810]">Rate Your Experience</div>
+          <div id="star-rating-row" class="flex justify-center gap-2 text-2xl">
+            <button type="button" onclick="selectStar(1)" class="star-btn text-[#D7C4B4] hover:scale-110 transition">★</button>
+            <button type="button" onclick="selectStar(2)" class="star-btn text-[#D7C4B4] hover:scale-110 transition">★</button>
+            <button type="button" onclick="selectStar(3)" class="star-btn text-[#D7C4B4] hover:scale-110 transition">★</button>
+            <button type="button" onclick="selectStar(4)" class="star-btn text-[#D7C4B4] hover:scale-110 transition">★</button>
+            <button type="button" onclick="selectStar(5)" class="star-btn text-[#D7C4B4] hover:scale-110 transition">★</button>
+          </div>
+          <a id="modal-google-review-link" href="#" target="_blank" rel="noopener" onclick="markSocialConnect('googleReview')" class="block w-full py-2.5 rounded-xl bg-[#1A73E8] hover:bg-[#1558B0] text-white text-xs font-bold transition shadow">
+            ⭐ Open Google Business Profile &amp; Rate Us
+          </a>
+        </div>
+
+        <div class="space-y-2">
+          <div class="text-xs font-bold text-[#2C1810]">Connect on All Social Handles</div>
+          <div id="modal-social-buttons" class="grid grid-cols-2 gap-2"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast-box" class="hidden fixed top-16 left-1/2 -translate-x-1/2 z-50 bg-[#2C1810] text-white text-xs font-medium px-4 py-2.5 rounded-xl shadow-lg border border-[#C67C4E]/50 max-w-[90%] text-center animate-pop"></div>
+
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'cafe_retention_demo_v1';
+
+    const DEFAULT_STATE = {
+      cafeName: 'Roast & Repeat Cafe',
+      googleReviewUrl: 'https://g.page/r/demo-cafe-review/review',
+      socialLinks: {
+        instagram: 'https://instagram.com/roastandrepeat.cafe',
+        facebook: 'https://facebook.com/roastandrepeat.cafe',
+        youtube: 'https://youtube.com/@roastandrepeat',
+        whatsapp: 'https://whatsapp.com/channel/demo-cafe'
+      },
+      selectedStars: 5,
+      trialDaysLeft: 28,
+      trialLocked: false,
+      activeTab: 'order',
+      selectedTable: 'Table 2',
+      selectedCategory: 'All',
+      activeCustomerId: 'c1',
+      winbackOffer: '15% Off on your next coffee',
+      cart: {},
+      menu: [
+        { id: 'm1', name: 'Signature Cold Coffee', category: 'Cold Brew', price: 110, emoji: '🧋', popular: true },
+        { id: 'm2', name: 'Hot Cappuccino', category: 'Coffee', price: 130, emoji: '☕', popular: true },
+        { id: 'm3', name: 'Masala Kulhad Chai', category: 'Coffee', price: 45, emoji: '🫖', popular: false },
+        { id: 'm4', name: 'Hazelnut Iced Latte', category: 'Cold Brew', price: 160, emoji: '🧊', popular: true },
+        { id: 'm5', name: 'Grilled Paneer Sandwich', category: 'Snacks', price: 140, emoji: '🥪', popular: false },
+        { id: 'm6', name: 'Choco Lava Brownie', category: 'Snacks', price: 95, emoji: '🍫', popular: true }
+      ],
+      customers: [
+        { id: 'c1', name: 'Aarav Kulkarni', phone: '9876543210', stamps: 4, totalVisits: 4, lastVisitDaysAgo: 1, pingedToday: false, social: { googleReview: true, instagram: true, facebook: false, youtube: false, whatsapp: true } },
+        { id: 'c2', name: 'Priya Deshmukh', phone: '9822011223', stamps: 6, totalVisits: 8, lastVisitDaysAgo: 3, pingedToday: false, social: { googleReview: true, instagram: true, facebook: true, youtube: false, whatsapp: true } },
+        { id: 'c3', name: 'Rohan Verma', phone: '9765400112', stamps: 2, totalVisits: 2, lastVisitDaysAgo: 22, pingedToday: false, social: { googleReview: false, instagram: true, facebook: false, youtube: false, whatsapp: false } },
+        { id: 'c4', name: 'Sneha Joshi', phone: '9923145678', stamps: 1, totalVisits: 1, lastVisitDaysAgo: 35, pingedToday: false, social: { googleReview: false, instagram: false, facebook: false, youtube: false, whatsapp: false } },
+        { id: 'c5', name: 'Amit Patil', phone: '9890123456', stamps: 3, totalVisits: 3, lastVisitDaysAgo: 19, pingedToday: false, social: { googleReview: true, instagram: false, facebook: false, youtube: true, whatsapp: false } }
+      ],
+      rewards: [
+        { id: 'r1', title: 'Free Choco Cookie', desc: 'Valid with any hot or cold beverage', cost: 3, emoji: '🍪' },
+        { id: 'r2', title: 'Free Signature Coffee', desc: 'Any coffee up to ₹150 completely free', cost: 6, emoji: '☕' },
+        { id: 'r3', title: '25% Off Entire Bill', desc: 'Applicable on orders above ₹300', cost: 10, emoji: '🎉' }
+      ],
+      vouchers: [
+        { code: 'CAFE-4921', rewardTitle: 'Free Choco Cookie', customerName: 'Priya Deshmukh', status: 'Active' }
+      ],
+      orders: [
+        { id: 'ORD-104', customerName: 'Priya Deshmukh', table: 'Table 4', itemsText: '1x Hot Cappuccino, 1x Choco Lava Brownie', total: 225, status: 'Served', time: '10:35 AM' },
+        { id: 'ORD-103', customerName: 'Aarav Kulkarni', table: 'Table 2', itemsText: '1x Signature Cold Coffee', total: 110, status: 'Preparing', time: '11:10 AM' }
+      ]
+    };
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          const merged = { ...DEFAULT_STATE, ...parsed };
+          merged.socialLinks = { ...DEFAULT_STATE.socialLinks, ...(parsed.socialLinks || {}) };
+          merged.customers = (merged.customers || []).map(c => ({
+            ...c,
+            social: { googleReview: false, instagram: false, facebook: false, youtube: false, whatsapp: false, ...(c.social || {}) }
+          }));
+          return merged;
+        }
+      } catch (e) {}
+      return JSON.parse(JSON.stringify(DEFAULT_STATE));
+    }
+
+    let state = loadState();
+
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch (e) {}
+    }
+
+    let toastTimer = null;
+    function showToast(msg) {
+      const box = document.getElementById('toast-box');
+      box.textContent = msg;
+      box.classList.remove('hidden');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => box.classList.add('hidden'), 2600);
+    }
+
+    function getActiveCustomer() {
+      return state.customers.find(c => c.id === state.activeCustomerId) || state.customers[0];
+    }
+
+    function getInitials(name) {
+      return name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+    }
+
+    function updateHeaderAndChrome() {
+      document.getElementById('header-cafe-name').textContent = state.cafeName;
+      document.getElementById('lock-cafe-name').textContent = state.cafeName;
+
+      const badge = document.getElementById('trial-badge-btn');
+      if (state.trialLocked || state.trialDaysLeft <= 0) {
+        badge.textContent = 'Trial Expired';
+        badge.className = 'shrink-0 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-red-500/25 border border-red-400 text-red-100 transition';
+      } else {
+        badge.textContent = `Pilot: ${state.trialDaysLeft}d Left`;
+        badge.className = 'shrink-0 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-[#C67C4E]/25 border border-[#C67C4E]/60 text-[#FFE5D0] hover:bg-[#C67C4E]/40 transition';
+      }
+
+      const cust = getActiveCustomer();
+      document.getElementById('active-cust-initials').textContent = getInitials(cust.name);
+      document.getElementById('active-cust-name').textContent = cust.name;
+      document.getElementById('active-cust-meta').textContent = `${cust.stamps} Stamps • ${state.selectedTable}`;
+
+      const custBar = document.getElementById('customer-context-bar');
+      if (state.activeTab === 'winback' || state.activeTab === 'owner') {
+        custBar.classList.add('hidden');
+      } else {
+        custBar.classList.remove('hidden');
+      }
+
+      const dormantCount = state.customers.filter(c => c.lastVisitDaysAgo >= 14 && !c.pingedToday).length;
+      const dBadge = document.getElementById('dormant-badge');
+      dBadge.style.display = dormantCount > 0 ? 'block' : 'none';
+
+      // Lock overlay applies to customer-facing tabs if locked/expired
+      const lockOverlay = document.getElementById('trial-lock-overlay');
+      const isLocked = (state.trialLocked || state.trialDaysLeft <= 0) && state.activeTab !== 'owner';
+      lockOverlay.classList.toggle('hidden', !isLocked);
+
+      // Update Nav active styling
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        const isActive = btn.dataset.tab === state.activeTab;
+        btn.classList.toggle('text-[#C67C4E]', isActive);
+        btn.classList.toggle('font-semibold', isActive);
+        btn.classList.toggle('text-[#8A7568]', !isActive);
+        btn.classList.toggle('font-medium', !isActive);
+      });
+
+      // Cart bar
+      updateCartBar();
+    }
+
+    function updateCartBar() {
+      const bar = document.getElementById('floating-cart-bar');
+      const entries = Object.entries(state.cart).filter(([, qty]) => qty > 0);
+      if (state.activeTab !== 'order' || entries.length === 0) {
+        bar.classList.add('hidden');
+        return;
+      }
+      let totalQty = 0;
+      let totalAmt = 0;
+      entries.forEach(([id, qty]) => {
+        const item = state.menu.find(m => m.id === id);
+        if (item) {
+          totalQty += qty;
+          totalAmt += item.price * qty;
+        }
+      });
+      document.getElementById('cart-summary-count').textContent = `${totalQty} item${totalQty > 1 ? 's' : ''} • ${state.selectedTable}`;
+      document.getElementById('cart-summary-total').textContent = `₹${totalAmt}`;
+      bar.classList.remove('hidden');
+    }
+
+    function renderOrderScreen() {
+      const tables = ['Table 1', 'Table 2', 'Table 3', 'Table 4', 'Takeaway'];
+      const categories = ['All', 'Coffee', 'Cold Brew', 'Snacks'];
+      const filteredMenu = state.selectedCategory === 'All'
+        ? state.menu
+        : state.menu.filter(m => m.category === state.selectedCategory);
+
+      return `
+        <section class="space-y-3">
+          <div class="bg-gradient-to-r from-[#2C1810] to-[#4A2C1D] rounded-2xl p-4 text-white shadow">
+            <div class="flex items-center justify-between gap-2">
+              <div>
+                <span class="text-[10px] uppercase tracking-wider bg-[#C67C4E] px-2 py-0.5 rounded-full font-bold">QR Self-Order</span>
+                <h2 class="text-base font-bold mt-1.5">Order &amp; Collect Stamps</h2>
+                <p class="text-[11px] text-[#E6D5C3]">Every order automatically adds +1 stamp to your card.</p>
+              </div>
+              <div class="bg-white text-[#2C1810] p-2 rounded-xl text-center shrink-0">
+                <div class="text-lg leading-none">📱</div>
+                <div class="text-[9px] font-bold mt-1">${state.selectedTable}</div>
+              </div>
+            </div>
+            <div class="mt-3 flex gap-1.5 overflow-x-auto no-scrollbar">
+              ${tables.map(t => `
+                <button type="button" onclick="selectTable('${t}')" class="px-2.5 py-1 rounded-lg text-[11px] font-semibold shrink-0 transition ${state.selectedTable === t ? 'bg-[#C67C4E] text-white' : 'bg-white/15 text-[#E6D5C3] hover:bg-white/25'}">
+                  ${t}
+                </button>
+              `).join('')}
+            </div>
+          </div>
+
+          <div class="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+            ${categories.map(cat => `
+              <button type="button" onclick="selectCategory('${cat}')" class="px-3.5 py-1.5 rounded-full text-xs font-semibold shrink-0 border transition ${state.selectedCategory === cat ? 'bg-[#2C1810] text-white border-[#2C1810]' : 'bg-white text-[#6B574B] border-[#EADFD5]'}">
+                ${cat}
+              </button>
+            `).join('')}
+          </div>
+
+          <div class="space-y-2.5 pb-14">
+            ${filteredMenu.map(item => {
+              const qty = state.cart[item.id] || 0;
+              return `
+                <div class="bg-white rounded-2xl p-3 border border-[#EADFD5] flex items-center justify-between gap-3 shadow-sm">
+                  <div class="flex items-center gap-3 min-w-0">
+                    <div class="w-12 h-12 rounded-xl bg-[#FAF6F2] border border-[#EADFD5] flex items-center justify-center text-2xl shrink-0">
+                      ${item.emoji}
+                    </div>
+                    <div class="min-w-0">
+                      <div class="flex items-center gap-1.5">
+                        <h3 class="text-sm font-bold text-[#2C1810] truncate">${item.name}</h3>
+                        ${item.popular ? '<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-[#FFF3E0] text-[#C67C4E] shrink-0">BEST</span>' : ''}
+                      </div>
+                      <p class="text-[11px] text-[#8A7568]">${item.category}</p>
+                      <p class="text-sm font-bold text-[#C67C4E] mt-0.5">₹${item.price}</p>
+                    </div>
+                  </div>
+                  <div class="shrink-0">
+                    ${qty === 0 ? `
+                      <button type="button" onclick="updateCart('${item.id}', 1)" class="px-3.5 py-1.5 rounded-xl bg-[#FAF6F2] border border-[#C67C4E] text-[#C67C4E] text-xs font-bold hover:bg-[#C67C4E] hover:text-white transition">
+                        + Add
+                      </button>
+                    ` : `
+                      <div class="flex items-center gap-2 bg-[#2C1810] text-white rounded-xl px-2 py-1">
+                        <button type="button" onclick="updateCart('${item.id}', -1)" class="w-5 h-5 flex items-center justify-center font-bold text-sm">−</button>
+                        <span class="text-xs font-bold min-w-[14px] text-center">${qty}</span>
+                        <button type="button" onclick="updateCart('${item.id}', 1)" class="w-5 h-5 flex items-center justify-center font-bold text-sm">+</button>
+                      </div>
+                    `}
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </section>
+      `;
+    }
+
+    function renderStampsScreen() {
+      const cust = getActiveCustomer();
+      const target = 6;
+      const filled = Math.min(cust.stamps, target);
+      const pct = Math.min(100, Math.round((filled / target) * 100));
+
+      const slots = Array.from({ length: target }, (_, idx) => {
+        const isDone = idx < filled;
+        const isSixth = idx === 5;
+        if (isSixth) {
+          return `
+            <div class="aspect-square rounded-2xl flex flex-col items-center justify-center border-2 p-1 text-center transition ${isDone ? 'bg-[#2E7D32] border-[#2E7D32] text-white shadow-md' : 'bg-[#FFF5ED] border-dashed border-[#C67C4E] text-[#C67C4E]'}">
+              <span class="text-2xl">${isDone ? '🎉' : '🎁'}</span>
+              <span class="text-[9px] font-extrabold leading-tight mt-1 uppercase">${isDone ? 'Free Coffee Unlocked!' : '6th: Free Coffee'}</span>
+            </div>
+          `;
+        }
+        return `
+          <div class="aspect-square rounded-2xl flex flex-col items-center justify-center border-2 transition ${isDone ? 'bg-[#C67C4E] border-[#C67C4E] text-white shadow-md' : 'bg-[#FAF6F2] border-dashed border-[#D7C4B4] text-[#B39F92]'}">
+            <span class="text-2xl">${isDone ? '☕' : '○'}</span>
+            <span class="text-[10px] font-bold mt-1">${isDone ? 'Stamped' : `#${idx + 1}`}</span>
+          </div>
+        `;
+      }).join('');
+
+      return `
+        <section class="space-y-4">
+          <div class="bg-gradient-to-br from-[#2C1810] to-[#4A2C1D] rounded-2xl p-5 text-white shadow-lg">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-[11px] uppercase tracking-wider text-[#E6D5C3]">Digital Stamp Card</p>
+                <h2 class="text-lg font-bold mt-0.5">${cust.name}</h2>
+              </div>
+              <div class="text-right">
+                <div class="text-2xl font-extrabold text-[#FFD2A6]">${cust.stamps}</div>
+                <div class="text-[10px] text-[#E6D5C3]">Total Stamps</div>
+              </div>
+            </div>
+            <div class="mt-4">
+              <div class="flex justify-between text-[11px] mb-1.5 text-[#E6D5C3]">
+                <span>Free Coffee Goal (${filled}/${target})</span>
+                <span>${pct}%</span>
+              </div>
+              <div class="w-full h-2.5 bg-white/15 rounded-full overflow-hidden">
+                <div class="h-full bg-[#C67C4E] rounded-full transition-all duration-300" style="width: ${pct}%"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-2xl p-4 border border-[#EADFD5] shadow-sm">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-sm font-bold text-[#2C1810]">6-Visit Loyalty Card</h3>
+              <span class="text-[11px] font-semibold text-[#2E7D32] bg-green-50 px-2 py-0.5 rounded-full">
+                ${cust.stamps >= 6 ? 'Free Coffee Ready!' : `${6 - filled} more to go`}
+              </span>
+            </div>
+            <div class="grid grid-cols-3 gap-3">
+              ${slots}
+            </div>
+            <div class="mt-4 pt-3 border-t border-[#F0E6DC] flex gap-2">
+              <button type="button" onclick="addManualStamp()" class="flex-1 py-2.5 rounded-xl bg-[#2C1810] text-white text-xs font-bold hover:bg-[#3F2419] transition">
+                + Staff: Add 1 Stamp
+              </button>
+              <button type="button" onclick="switchTab('rewards')" class="px-4 py-2.5 rounded-xl bg-[#FFF5ED] border border-[#C67C4E] text-[#C67C4E] text-xs font-bold hover:bg-[#FCE8D5] transition">
+                Redeem →
+              </button>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-2xl p-4 border border-[#EADFD5] flex items-center justify-between">
+            <div>
+              <div class="text-xs font-bold text-[#2C1810]">Visit History</div>
+              <div class="text-[11px] text-[#7A6558]">Total Visits: ${cust.totalVisits} • Last Visit: ${cust.lastVisitDaysAgo === 0 ? 'Today' : `${cust.lastVisitDaysAgo}d ago`}</div>
+            </div>
+            <span class="text-xl">🔥</span>
+          </div>
+        </section>
+      `;
+    }
+
+    function renderRewardsScreen() {
+      const cust = getActiveCustomer();
+      return `
+        <section class="space-y-4">
+          <div class="bg-white rounded-2xl p-4 border border-[#EADFD5] flex items-center justify-between shadow-sm">
+            <div>
+              <p class="text-[11px] text-[#7A6558]">Available Balance</p>
+              <h2 class="text-xl font-extrabold text-[#2C1810]">${cust.stamps} Stamps</h2>
+            </div>
+            <div class="px-3 py-1.5 rounded-xl bg-[#FFF5ED] text-[#C67C4E] text-xs font-bold">
+              ${cust.name}
+            </div>
+          </div>
+
+          <div class="space-y-2.5">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-[#7A6558]">Redeemable Rewards</h3>
+            ${state.rewards.map(r => {
+              const canClaim = cust.stamps >= r.cost;
+              return `
+                <div class="bg-white rounded-2xl p-3.5 border border-[#EADFD5] flex items-center justify-between gap-3 shadow-sm">
+                  <div class="flex items-center gap-3 min-w-0">
+                    <div class="w-11 h-11 rounded-xl bg-[#FAF6F2] flex items-center justify-center text-2xl shrink-0">${r.emoji}</div>
+                    <div class="min-w-0">
+                      <h4 class="text-sm font-bold text-[#2C1810]">${r.title}</h4>
+                      <p class="text-[11px] text-[#7A6558]">${r.desc}</p>
+                      <span class="inline-block mt-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#F5E6D3] text-[#8B4513]">Requires ${r.cost} Stamps</span>
+                    </div>
+                  </div>
+                  <button type="button" onclick="claimReward('${r.id}')" ${canClaim ? '' : 'disabled'} class="shrink-0 px-3 py-2 rounded-xl text-xs font-bold transition ${canClaim ? 'bg-[#C67C4E] text-white hover:bg-[#B0693D] shadow' : 'bg-[#EFE8E0] text-[#A39387] cursor-not-allowed'}">
+                    ${canClaim ? 'Claim' : `Need ${r.cost - cust.stamps}`}
+                  </button>
+                </div>
+              `;
+            }).join('')}
+          </div>
+
+          <div class="bg-white rounded-2xl p-4 border border-[#EADFD5] space-y-2.5 shadow-sm">
+            <div class="flex items-center justify-between">
+              <h3 class="text-xs font-bold uppercase tracking-wider text-[#2C1810]">Rate &amp; Follow Us</h3>
+              <span class="text-[10px] font-semibold text-[#C67C4E]">All Handles</span>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <a href="${state.googleReviewUrl}" target="_blank" rel="noopener" onclick="markSocialConnect('googleReview')" class="p-2 rounded-xl border text-xs font-semibold flex items-center justify-between ${cust.social.googleReview ? 'bg-green-50 border-green-300 text-[#2E7D32]' : 'bg-[#FAF6F2] border-[#EADFD5] text-[#2C1810]'}">
+                <span>⭐ Google Review</span><span>${cust.social.googleReview ? '✓' : '→'}</span>
+              </a>
+              <a href="${state.socialLinks.instagram}" target="_blank" rel="noopener" onclick="markSocialConnect('instagram')" class="p-2 rounded-xl border text-xs font-semibold flex items-center justify-between ${cust.social.instagram ? 'bg-green-50 border-green-300 text-[#2E7D32]' : 'bg-[#FAF6F2] border-[#EADFD5] text-[#2C1810]'}">
+                <span>📸 Instagram</span><span>${cust.social.instagram ? '✓' : '→'}</span>
+              </a>
+              <a href="${state.socialLinks.facebook}" target="_blank" rel="noopener" onclick="markSocialConnect('facebook')" class="p-2 rounded-xl border text-xs font-semibold flex items-center justify-between ${cust.social.facebook ? 'bg-green-50 border-green-300 text-[#2E7D32]' : 'bg-[#FAF6F2] border-[#EADFD5] text-[#2C1810]'}">
+                <span>📘 Facebook</span><span>${cust.social.facebook ? '✓' : '→'}</span>
+              </a>
+              <a href="${state.socialLinks.youtube}" target="_blank" rel="noopener" onclick="markSocialConnect('youtube')" class="p-2 rounded-xl border text-xs font-semibold flex items-center justify-between ${cust.social.youtube ? 'bg-green-50 border-green-300 text-[#2E7D32]' : 'bg-[#FAF6F2] border-[#EADFD5] text-[#2C1810]'}">
+                <span>▶️ YouTube</span><span>${cust.social.youtube ? '✓' : '→'}</span>
+              </a>
+            </div>
+          </div>
+
+          <div class="space-y-2">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-[#7A6558]">Claimed Vouchers</h3>
+            ${state.vouchers.length === 0 ? `
+              <div class="bg-white rounded-2xl p-4 border border-[#EADFD5] text-center text-xs text-[#8A7568]">No vouchers claimed yet.</div>
+            ` : state.vouchers.map(v => `
+              <div class="bg-white rounded-2xl p-3 border border-dashed border-[#C67C4E] flex items-center justify-between">
+                <div>
+                  <div class="text-xs font-bold text-[#2C1810]">${v.rewardTitle}</div>
+                  <div class="text-[11px] text-[#7A6558]">${v.customerName}</div>
+                </div>
+                <div class="text-right">
+                  <div class="text-xs font-mono font-bold text-[#C67C4E]">${v.code}</div>
+                  <div class="text-[10px] text-[#2E7D32] font-semibold">${v.status}</div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </section>
+      `;
+    }
+
+    function renderWinbackScreen() {
+      const dormant = state.customers.filter(c => c.lastVisitDaysAgo >= 14);
+      const offers = [
+        '15% Off on your next coffee',
+        'Free Choco Cookie with any drink',
+        'Buy 1 Get 1 on Cold Coffee today'
+      ];
+
+      return `
+        <section class="space-y-4">
+          <div class="bg-gradient-to-r from-[#2C1810] to-[#4A2C1D] rounded-2xl p-4 text-white shadow">
+            <div class="flex items-center justify-between">
+              <div>
+                <span class="text-[10px] uppercase tracking-wider bg-red-500/80 px-2 py-0.5 rounded-full font-bold">Win-Back Engine</span>
+                <h2 class="text-base font-bold mt-1.5">Bring Back Dormant Guests</h2>
+                <p class="text-[11px] text-[#E6D5C3]">${dormant.length} customers haven't visited in 14+ days.</p>
+              </div>
+              <div class="text-2xl">💬</div>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-2xl p-3.5 border border-[#EADFD5] space-y-2 shadow-sm">
+            <label class="text-xs font-bold text-[#2C1810] block">Select Win-Back Offer</label>
+            <select id="winback-offer-select" onchange="setWinbackOffer(this.value)" class="w-full px-3 py-2 rounded-xl border border-[#DFD2C5] text-xs bg-[#FAF6F2] text-[#2C1810] focus:outline-none">
+              ${offers.map(o => `<option value="${o}" ${state.winbackOffer === o ? 'selected' : ''}>${o}</option>`).join('')}
+            </select>
+            <button type="button" onclick="sendBulkWinback()" class="w-full py-2 rounded-xl bg-[#2E7D32] hover:bg-[#256628] text-white text-xs font-bold transition">
+              Send Auto Win-Back to All (${dormant.filter(d => !d.pingedToday).length} Pending)
+            </button>
+          </div>
+
+          <div class="space-y-2.5">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-[#7A6558]">Dormant Customers (14+ Days)</h3>
+            ${dormant.length === 0 ? `
+              <div class="bg-white rounded-2xl p-4 border border-[#EADFD5] text-center text-xs text-[#7A6558]">All customers are active!</div>
+            ` : dormant.map(c => {
+              const msg = encodeURIComponent(`Hi ${c.name}! We miss you at ${state.cafeName}. Show this message for ${state.winbackOffer} this week! ☕`);
+              return `
+                <div class="bg-white rounded-2xl p-3.5 border border-[#EADFD5] flex items-center justify-between gap-2 shadow-sm">
+                  <div class="min-w-0">
+                    <div class="flex items-center gap-2">
+                      <h4 class="text-sm font-bold text-[#2C1810] truncate">${c.name}</h4>
+                      <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-50 text-red-600 shrink-0">${c.lastVisitDaysAgo}d ago</span>
+                    </div>
+                    <p class="text-[11px] text-[#7A6558] mt-0.5">+91 ${c.phone} • ${c.stamps} Stamps</p>
+                  </div>
+                  ${c.pingedToday ? `
+                    <span class="px-3 py-1.5 rounded-xl bg-green-50 text-[#2E7D32] text-xs font-bold shrink-0">Sent ✓</span>
+                  ` : `
+                    <a href="https://wa.me/91${c.phone}?text=${msg}" target="_blank" rel="noopener" onclick="markPinged('${c.id}')" class="px-3 py-1.5 rounded-xl bg-[#25D366] hover:bg-[#1EBE5D] text-white text-xs font-bold shrink-0 transition">
+                      WhatsApp
+                    </a>
+                  `}
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </section>
+      `;
+    }
+
+    function renderOwnerScreen() {
+      const totalCust = state.customers.length;
+      const repeatCust = state.customers.filter(c => c.totalVisits >= 2).length;
+      const repeatRate = totalCust > 0 ? Math.round((repeatCust / totalCust) * 100) : 0;
+      const totalRev = state.orders.reduce((acc, o) => acc + o.total, 0);
+      const dormantCount = state.customers.filter(c => c.lastVisitDaysAgo >= 14).length;
+
+      return `
+        <section class="space-y-4">
+          <div class="grid grid-cols-2 gap-2.5">
+            <div class="bg-white rounded-2xl p-3.5 border border-[#EADFD5] shadow-sm">
+              <div class="text-[11px] text-[#7A6558]">Total Guests</div>
+              <div class="text-xl font-extrabold text-[#2C1810] mt-0.5">${totalCust}</div>
+              <div class="text-[10px] text-[#2E7D32] font-semibold mt-0.5">Repeat Rate: ${repeatRate}%</div>
+            </div>
+            <div class="bg-white rounded-2xl p-3.5 border border-[#EADFD5] shadow-sm">
+              <div class="text-[11px] text-[#7A6558]">QR Order Revenue</div>
+              <div class="text-xl font-extrabold text-[#C67C4E] mt-0.5">₹${totalRev}</div>
+              <div class="text-[10px] text-[#7A6558] mt-0.5">${state.orders.length} Orders Today</div>
+            </div>
+            <div class="bg-white rounded-2xl p-3.5 border border-[#EADFD5] shadow-sm">
+              <div class="text-[11px] text-[#7A6558]">Dormant Alerts</div>
+              <div class="text-xl font-extrabold text-red-600 mt-0.5">${dormantCount}</div>
+              <div class="text-[10px] text-[#7A6558] mt-0.5">Ready for Win-Back</div>
+            </div>
+            <div class="bg-white rounded-2xl p-3.5 border border-[#EADFD5] shadow-sm">
+              <div class="text-[11px] text-[#7A6558]">Vouchers Active</div>
+              <div class="text-xl font-extrabold text-[#2C1810] mt-0.5">${state.vouchers.length}</div>
+              <div class="text-[10px] text-[#7A6558] mt-0.5">Loyalty Redemptions</div>
+            </div>
+          </div>
+
+          <!-- Live Orders Feed -->
+          <div class="bg-white rounded-2xl p-4 border border-[#EADFD5] space-y-2.5 shadow-sm">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-[#7A6558]">Live QR Orders</h3>
+            ${state.orders.map(o => `
+              <div class="p-2.5 rounded-xl bg-[#FAF6F2] border border-[#EADFD5] flex items-center justify-between gap-2">
+                <div class="min-w-0">
+                  <div class="text-xs font-bold text-[#2C1810] truncate">${o.id} • ${o.customerName} (${o.table})</div>
+                  <div class="text-[11px] text-[#7A6558] truncate">${o.itemsText}</div>
+                  <div class="text-[11px] font-bold text-[#C67C4E] mt-0.5">₹${o.total} • ${o.time}</div>
+                </div>
+                <button type="button" onclick="toggleOrderStatus('${o.id}')" class="shrink-0 px-2.5 py-1 rounded-lg text-[11px] font-bold transition ${o.status === 'Served' ? 'bg-green-100 text-[#2E7D32]' : 'bg-amber-100 text-amber-800'}">
+                  ${o.status}
+                </button>
+              </div>
+            `).join('')}
+          </div>
+
+          <!-- Customer Social & Review Tracker -->
+          <div class="bg-white rounded-2xl p-4 border border-[#EADFD5] space-y-2.5 shadow-sm">
+            <div class="flex items-center justify-between">
+              <h3 class="text-xs font-bold uppercase tracking-wider text-[#2C1810]">Customer Follow &amp; Review Tracker</h3>
+              <span class="text-[10px] font-semibold text-[#7A6558]">Tap badge to toggle</span>
+            </div>
+            <div class="space-y-2">
+              ${state.customers.map(c => {
+                const sc = c.social || {};
+                const badges = [
+                  { key: 'googleReview', label: 'Google ⭐' },
+                  { key: 'instagram', label: 'IG' },
+                  { key: 'facebook', label: 'FB' },
+                  { key: 'youtube', label: 'YT' },
+                  { key: 'whatsapp', label: 'WA' }
+                ];
+                return `
+                  <div class="p-2.5 rounded-xl bg-[#FAF6F2] border border-[#EADFD5] space-y-1.5">
+                    <div class="flex items-center justify-between">
+                      <span class="text-xs font-bold text-[#2C1810]">${c.name}</span>
+                      <span class="text-[10px] text-[#7A6558]">+91 ${c.phone}</span>
+                    </div>
+                    <div class="flex flex-wrap gap-1.5">
+                      ${badges.map(b => `
+                        <button type="button" onclick="toggleCustomerSocial('${c.id}', '${b.key}')" class="px-2 py-0.5 rounded-full text-[10px] font-bold border transition ${sc[b.key] ? 'bg-green-100 border-green-300 text-[#2E7D32]' : 'bg-white border-[#DFD2C5] text-[#9E8B7E]'}">
+                          ${b.label} ${sc[b.key] ? '✓' : '✕'}
+                        </button>
+                      `).join('')}
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+
+          <!-- Google Business & All Social Media Handles Manager -->
+          <div class="bg-white rounded-2xl p-4 border border-[#EADFD5] space-y-2.5 shadow-sm">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-[#2C1810]">Google Profile &amp; Social Handles</h3>
+            <div class="space-y-2">
+              <div>
+                <label class="text-[10px] font-semibold text-[#7A6558] block mb-0.5">Google Business Review Link</label>
+                <input type="url" value="${state.googleReviewUrl}" oninput="updateSocialLink('google', this.value)" class="w-full px-2.5 py-1.5 text-xs rounded-xl border border-[#DFD2C5] focus:outline-none focus:border-[#C67C4E]" />
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="text-[10px] font-semibold text-[#7A6558] block mb-0.5">Instagram URL</label>
+                  <input type="url" value="${state.socialLinks.instagram}" oninput="updateSocialLink('instagram', this.value)" class="w-full px-2.5 py-1.5 text-xs rounded-xl border border-[#DFD2C5] focus:outline-none focus:border-[#C67C4E]" />
+                </div>
+                <div>
+                  <label class="text-[10px] font-semibold text-[#7A6558] block mb-0.5">Facebook URL</label>
+                  <input type="url" value="${state.socialLinks.facebook}" oninput="updateSocialLink('facebook', this.value)" class="w-full px-2.5 py-1.5 text-xs rounded-xl border border-[#DFD2C5] focus:outline-none focus:border-[#C67C4E]" />
+                </div>
+                <div>
+                  <label class="text-[10px] font-semibold text-[#7A6558] block mb-0.5">YouTube URL</label>
+                  <input type="url" value="${state.socialLinks.youtube}" oninput="updateSocialLink('youtube', this.value)" class="w-full px-2.5 py-1.5 text-xs rounded-xl border border-[#DFD2C5] focus:outline-none focus:border-[#C67C4E]" />
+                </div>
+                <div>
+                  <label class="text-[10px] font-semibold text-[#7A6558] block mb-0.5">WhatsApp Channel</label>
+                  <input type="url" value="${state.socialLinks.whatsapp}" oninput="updateSocialLink('whatsapp', this.value)" class="w-full px-2.5 py-1.5 text-xs rounded-xl border border-[#DFD2C5] focus:outline-none focus:border-[#C67C4E]" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Menu Customizer (Per-Cafe Setup) -->
+          <div class="bg-white rounded-2xl p-4 border border-[#EADFD5] space-y-3 shadow-sm">
+            <div class="flex items-center justify-between">
+              <h3 class="text-xs font-bold uppercase tracking-wider text-[#2C1810]">Menu Manager (Har Cafe ke Liye)</h3>
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#F5E6D3] text-[#8B4513]">${state.menu.length} Items</span>
+            </div>
+            <div class="space-y-1.5 max-h-44 overflow-y-auto pr-1">
+              ${state.menu.map(m => `
+                <div class="flex items-center justify-between gap-2 p-2 rounded-xl bg-[#FAF6F2] border border-[#EADFD5] text-xs">
+                  <span class="font-semibold text-[#2C1810] truncate">${m.emoji} ${m.name} <span class="text-[#C67C4E]">(₹${m.price})</span></span>
+                  <button type="button" onclick="deleteMenuItem('${m.id}')" class="text-[11px] font-bold text-red-600 px-2 py-0.5 rounded-lg hover:bg-red-50 shrink-0">Remove</button>
+                </div>
+              `).join('')}
+            </div>
+            <div class="pt-2 border-t border-[#F0E6DC] space-y-2">
+              <div class="grid grid-cols-3 gap-2">
+                <input id="new-menu-name" type="text" placeholder="Item Name" class="col-span-2 px-2.5 py-2 text-xs rounded-xl border border-[#DFD2C5] focus:outline-none focus:border-[#C67C4E]" />
+                <input id="new-menu-price" type="number" placeholder="₹ Price" class="px-2.5 py-2 text-xs rounded-xl border border-[#DFD2C5] focus:outline-none focus:border-[#C67C4E]" />
+              </div>
+              <div class="flex gap-2">
+                <select id="new-menu-cat" class="flex-1 px-2.5 py-2 text-xs rounded-xl border border-[#DFD2C5] bg-[#FAF6F2] focus:outline-none">
+                  <option value="Coffee">Coffee</option>
+                  <option value="Cold Brew">Cold Brew</option>
+                  <option value="Snacks">Snacks</option>
+                </select>
+                <button type="button" onclick="addMenuItem()" class="px-4 py-2 rounded-xl bg-[#2C1810] text-white text-xs font-bold hover:bg-[#3F2419] transition">
+                  + Add Item
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 30-Day Pilot & Agency Control -->
+          <div class="bg-white rounded-2xl p-4 border border-[#EADFD5] space-y-3 shadow-sm">
+            <div class="flex items-center justify-between">
+              <h3 class="text-xs font-bold uppercase tracking-wider text-[#2C1810]">Client Pilot &amp; Trial Lock</h3>
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#F5E6D3] text-[#8B4513]">Admin Control</span>
+            </div>
+            <div>
+              <label class="text-[11px] font-semibold text-[#7A6558] block mb-1">Customize Cafe Name (for Client Demo)</label>
+              <input id="owner-cafe-name-input" type="text" value="${state.cafeName}" oninput="updateCafeName(this.value)" class="w-full px-3 py-2 text-xs rounded-xl border border-[#DFD2C5] focus:outline-none focus:border-[#C67C4E]" />
+            </div>
+            <div>
+              <div class="flex justify-between text-[11px] font-semibold text-[#7A6558] mb-1">
+                <span>1-Month Pilot Days Remaining</span>
+                <span class="text-[#2C1810]">${state.trialDaysLeft} Days</span>
+              </div>
+              <input type="range" min="0" max="30" value="${state.trialDaysLeft}" oninput="updateTrialDays(this.value)" class="w-full accent-[#C67C4E]" />
+            </div>
+            <div class="flex items-center justify-between pt-1">
+              <span class="text-xs font-semibold text-[#2C1810]">Simulate Trial Expired Lock</span>
+              <button type="button" onclick="toggleTrialLock()" class="px-3 py-1.5 rounded-xl text-xs font-bold transition ${state.trialLocked ? 'bg-red-600 text-white' : 'bg-[#FAF6F2] border border-[#DFD2C5] text-[#2C1810]'}">
+                ${state.trialLocked ? 'Locked (Tap to Unlock)' : 'Unlocked (Active)'}
+              </button>
+            </div>
+            <button type="button" onclick="resetDemo()" class="w-full py-2 rounded-xl border border-[#DFD2C5] text-xs font-semibold text-[#7A6558] hover:bg-[#FAF6F2] transition">
+              Reset Demo Data
+            </button>
+          </div>
+        </section>
+      `;
+    }
+
+    function render() {
+      const main = document.getElementById('main-content');
+      if (state.activeTab === 'order') main.innerHTML = renderOrderScreen();
+      else if (state.activeTab === 'stamps') main.innerHTML = renderStampsScreen();
+      else if (state.activeTab === 'rewards') main.innerHTML = renderRewardsScreen();
+      else if (state.activeTab === 'winback') main.innerHTML = renderWinbackScreen();
+      else if (state.activeTab === 'owner') main.innerHTML = renderOwnerScreen();
+
+      updateHeaderAndChrome();
+      saveState();
+    }
+
+    // Global Event Actions
+    window.switchTab = function(tab) {
+      state.activeTab = tab;
+      render();
+    };
+
+    window.selectTable = function(table) {
+      state.selectedTable = table;
+      render();
+    };
+
+    window.selectCategory = function(cat) {
+      state.selectedCategory = cat;
+      render();
+    };
+
+    window.updateCart = function(itemId, delta) {
+      const next = (state.cart[itemId] || 0) + delta;
+      if (next <= 0) delete state.cart[itemId];
+      else state.cart[itemId] = next;
+      render();
+    };
+
+    window.addManualStamp = function() {
+      const cust = getActiveCustomer();
+      cust.stamps += 1;
+      cust.totalVisits += 1;
+      cust.lastVisitDaysAgo = 0;
+      showToast(`+1 Stamp added for ${cust.name}!`);
+      render();
+    };
+
+    window.claimReward = function(rewardId) {
+      const cust = getActiveCustomer();
+      const reward = state.rewards.find(r => r.id === rewardId);
+      if (!reward || cust.stamps < reward.cost) return;
+      cust.stamps -= reward.cost;
+      const code = 'CAFE-' + Math.floor(1000 + Math.random() * 9000);
+      state.vouchers.unshift({
+        code,
+        rewardTitle: reward.title,
+        customerName: cust.name,
+        status: 'Active'
+      });
+      showToast(`Reward claimed! Voucher: ${code}`);
+      render();
+      if (reward.cost >= 6) {
+        openReviewSocialModal(code);
+      }
+    };
+
+    function openReviewSocialModal(voucherCode) {
+      document.getElementById('modal-voucher-code').textContent = voucherCode;
+      document.getElementById('modal-google-review-link').href = state.googleReviewUrl;
+      renderModalStars();
+      renderModalSocialButtons();
+      document.getElementById('review-social-modal').classList.remove('hidden');
+    }
+
+    function renderModalStars() {
+      const btns = document.querySelectorAll('#star-rating-row .star-btn');
+      btns.forEach((btn, i) => {
+        const active = i < state.selectedStars;
+        btn.classList.toggle('text-amber-400', active);
+        btn.classList.toggle('text-[#D7C4B4]', !active);
+      });
+    }
+
+    function renderModalSocialButtons() {
+      const cust = getActiveCustomer();
+      const sc = cust.social || {};
+      const items = [
+        { key: 'instagram', label: '📸 Instagram', url: state.socialLinks.instagram },
+        { key: 'facebook', label: '📘 Facebook', url: state.socialLinks.facebook },
+        { key: 'youtube', label: '▶️ YouTube', url: state.socialLinks.youtube },
+        { key: 'whatsapp', label: '💬 WhatsApp', url: state.socialLinks.whatsapp }
+      ];
+      document.getElementById('modal-social-buttons').innerHTML = items.map(it => `
+        <a href="${it.url}" target="_blank" rel="noopener" onclick="markSocialConnect('${it.key}')" class="p-2.5 rounded-xl border text-xs font-bold flex items-center justify-between transition ${sc[it.key] ? 'bg-green-50 border-green-300 text-[#2E7D32]' : 'bg-[#FAF6F2] border-[#EADFD5] text-[#2C1810] hover:bg-[#FFF5ED]'}">
+          <span>${it.label}</span>
+          <span>${sc[it.key] ? 'Connected ✓' : 'Follow →'}</span>
+        </a>
+      `).join('');
+    }
+
+    window.selectStar = function(stars) {
+      state.selectedStars = stars;
+      renderModalStars();
+      saveState();
+    };
+
+    window.markSocialConnect = function(platformKey) {
+      const cust = getActiveCustomer();
+      if (!cust.social) cust.social = {};
+      cust.social[platformKey] = true;
+      renderModalSocialButtons();
+      showToast('Thanks for connecting!');
+      render();
+    };
+
+    window.toggleCustomerSocial = function(custId, platformKey) {
+      const c = state.customers.find(x => x.id === custId);
+      if (!c) return;
+      if (!c.social) c.social = {};
+      c.social[platformKey] = !c.social[platformKey];
+      render();
+    };
+
+    window.updateSocialLink = function(key, val) {
+      const clean = val.trim();
+      if (key === 'google') state.googleReviewUrl = clean || DEFAULT_STATE.googleReviewUrl;
+      else state.socialLinks[key] = clean || DEFAULT_STATE.socialLinks[key];
+      saveState();
+    };
+
+    window.setWinbackOffer = function(val) {
+      state.winbackOffer = val;
+      saveState();
+    };
+
+    window.markPinged = function(custId) {
+      const c = state.customers.find(x => x.id === custId);
+      if (c) {
+        c.pingedToday = true;
+        showToast(`WhatsApp win-back opened for ${c.name}`);
+        render();
+      }
+    };
+
+    window.sendBulkWinback = function() {
+      let count = 0;
+      state.customers.forEach(c => {
+        if (c.lastVisitDaysAgo >= 14 && !c.pingedToday) {
+          c.pingedToday = true;
+          count++;
+        }
+      });
+      showToast(count > 0 ? `Win-back campaign sent to ${count} dormant guests!` : 'All dormant guests already messaged today.');
+      render();
+    };
+
+    window.toggleOrderStatus = function(orderId) {
+      const o = state.orders.find(x => x.id === orderId);
+      if (o) {
+        o.status = o.status === 'Preparing' ? 'Served' : 'Preparing';
+        render();
+      }
+    };
+
+    window.updateCafeName = function(val) {
+      state.cafeName = val.trim() || 'Roast & Repeat Cafe';
+      updateHeaderAndChrome();
+      saveState();
+    };
+
+    window.updateTrialDays = function(val) {
+      state.trialDaysLeft = Number(val);
+      if (state.trialDaysLeft > 0) state.trialLocked = false;
+      render();
+    };
+
+    window.toggleTrialLock = function() {
+      state.trialLocked = !state.trialLocked;
+      if (!state.trialLocked && state.trialDaysLeft === 0) state.trialDaysLeft = 30;
+      render();
+    };
+
+    window.addMenuItem = function() {
+      const nameEl = document.getElementById('new-menu-name');
+      const priceEl = document.getElementById('new-menu-price');
+      const catEl = document.getElementById('new-menu-cat');
+      const name = nameEl ? nameEl.value.trim() : '';
+      const price = priceEl ? Number(priceEl.value) : 0;
+      const category = catEl ? catEl.value : 'Coffee';
+      if (!name || price <= 0) {
+        showToast('Please enter valid item name and price.');
+        return;
+      }
+      const emojiMap = { 'Coffee': '☕', 'Cold Brew': '🧊', 'Snacks': '🥐' };
+      state.menu.push({
+        id: 'm_' + Date.now(),
+        name,
+        category,
+        price,
+        emoji: emojiMap[category] || '☕',
+        popular: false
+      });
+      showToast(`${name} added to menu!`);
+      render();
+    };
+
+    window.deleteMenuItem = function(itemId) {
+      state.menu = state.menu.filter(m => m.id !== itemId);
+      delete state.cart[itemId];
+      showToast('Menu item removed.');
+      render();
+    };
+
+    window.resetDemo = function() {
+      state = JSON.parse(JSON.stringify(DEFAULT_STATE));
+      state.activeTab = 'owner';
+      showToast('Demo data reset!');
+      render();
+    };
+
+    function openCustomerModal() {
+      const list = document.getElementById('modal-customer-list');
+      list.innerHTML = state.customers.map(c => `
+        <button type="button" onclick="selectCustomer('${c.id}')" class="w-full text-left p-2.5 rounded-xl border flex items-center justify-between transition ${c.id === state.activeCustomerId ? 'bg-[#FFF5ED] border-[#C67C4E]' : 'bg-[#FAF6F2] border-[#EADFD5]'}">
+          <div>
+            <div class="text-xs font-bold text-[#2C1810]">${c.name}</div>
+            <div class="text-[11px] text-[#7A6558]">+91 ${c.phone} • ${c.lastVisitDaysAgo === 0 ? 'Visited today' : `${c.lastVisitDaysAgo}d ago`}</div>
+          </div>
+          <span class="text-xs font-bold text-[#C67C4E]">${c.stamps} ☕</span>
+        </button>
+      `).join('');
+      document.getElementById('customer-modal').classList.remove('hidden');
+    }
+
+    window.selectCustomer = function(id) {
+      state.activeCustomerId = id;
+      document.getElementById('customer-modal').classList.add('hidden');
+      render();
+    };
+
+    // Static listeners
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+      btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+    });
+
+    document.getElementById('trial-badge-btn').addEventListener('click', () => switchTab('owner'));
+    document.getElementById('unlock-demo-btn').addEventListener('click', () => switchTab('owner'));
+    document.getElementById('switch-customer-btn').addEventListener('click', openCustomerModal);
+    document.getElementById('close-customer-modal').addEventListener('click', () => {
+      document.getElementById('customer-modal').classList.add('hidden');
+    });
+
+    document.getElementById('close-review-modal').addEventListener('click', () => {
+      document.getElementById('review-social-modal').classList.add('hidden');
+    });
+
+    document.getElementById('add-customer-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const name = document.getElementById('new-cust-name').value.trim();
+      const phone = document.getElementById('new-cust-phone').value.trim();
+      if (!name || !phone) return;
+      const newCust = {
+        id: 'c_' + Date.now(),
+        name,
+        phone,
+        stamps: 0,
+        totalVisits: 0,
+        lastVisitDaysAgo: 0,
+        pingedToday: false,
+        social: { googleReview: false, instagram: false, facebook: false, youtube: false, whatsapp: false }
+      };
+      state.customers.unshift(newCust);
+      state.activeCustomerId = newCust.id;
+      document.getElementById('new-cust-name').value = '';
+      document.getElementById('new-cust-phone').value = '';
+      document.getElementById('customer-modal').classList.add('hidden');
+      showToast(`Welcome ${name}!`);
+      render();
+    });
+
+    document.getElementById('place-order-btn').addEventListener('click', () => {
+      const entries = Object.entries(state.cart).filter(([, qty]) => qty > 0);
+      if (entries.length === 0) return;
+      let total = 0;
+      const parts = [];
+      entries.forEach(([id, qty]) => {
+        const item = state.menu.find(m => m.id === id);
+        if (item) {
+          total += item.price * qty;
+          parts.push(`${qty}x ${item.name}`);
+        }
+      });
+      const cust = getActiveCustomer();
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      state.orders.unshift({
+        id: 'ORD-' + Math.floor(105 + Math.random() * 890),
+        customerName: cust.name,
+        table: state.selectedTable,
+        itemsText: parts.join(', '),
+        total,
+        status: 'Preparing',
+        time: timeStr
+      });
+      cust.stamps += 1;
+      cust.totalVisits += 1;
+      cust.lastVisitDaysAgo = 0;
+      state.cart = {};
+      showToast(`Order placed! +1 Stamp added to ${cust.name}'s card.`);
+      render();
+    });
+
+    render();
+  </script>
+</body>
+</html>
